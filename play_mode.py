@@ -87,7 +87,7 @@ def render():
     game_world.render()
     if paused:
         pause_image.draw(get_canvas_width() // 2, get_canvas_height() // 2)
-    if item_mode:
+    elif item_mode:
         center_x = get_canvas_width() // 2
         center_y = get_canvas_height() // 2
         item_select_image.draw(center_x, center_y)
