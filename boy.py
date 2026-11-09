@@ -8,6 +8,11 @@ from transitions import Machine
 import game_world
 from ball import Ball
 
+BALL_IMAGE_PATHS = {
+    'small': 'ball21x21.png',
+    'large': 'ball41x41.png',
+}
+
 
 class Boy:
     def __init__(self):
@@ -48,7 +53,8 @@ class Boy:
         self.frame = 0
 
     def fire_ball(self):
-        ball = Ball(self.x, self.y, self.face_dir * 10)
+        ball = Ball(self.x, self.y, self.face_dir * 10,
+                    BALL_IMAGE_PATHS[self.selected_item])
         game_world.add_oject(ball)
 
     def release_movement(self):
