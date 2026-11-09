@@ -40,6 +40,16 @@ class BoyItemTests(unittest.TestCase):
         )
         add_object.assert_called_once_with(ball_factory.return_value)
 
+    def test_empty_item_does_not_create_ball(self):
+        with patch.object(boy, 'load_image', return_value=Mock()):
+            with patch.object(boy, 'Ball') as ball_factory:
+                player = boy.Boy()
+                player.selected_item = 'none'
+
+                player.fire_ball()
+
+        ball_factory.assert_not_called()
+
 
 if __name__ == '__main__':
     unittest.main()
