@@ -60,11 +60,15 @@ def handle_events():
 
 def init():
     global boy, paused, pause_key_down, pause_image
+    global item_mode, item_key_down, item_select_image
 
     game_world.clear()
     paused = False
     pause_key_down = False
+    item_mode = False
+    item_key_down = False
     pause_image = load_image('pause.png')
+    item_select_image = load_image('item_select.png')
     boy = Boy()
     game_world.add_oject(boy)
 
@@ -88,7 +92,11 @@ def render():
 
 def finish():
     global pause_image, paused, pause_key_down
+    global item_mode, item_key_down, item_select_image
     game_world.clear()
     pause_image = None
+    item_select_image = None
     paused = False
     pause_key_down = False
+    item_mode = False
+    item_key_down = False
