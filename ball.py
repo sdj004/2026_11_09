@@ -4,11 +4,12 @@ import game_world
 
 
 class Ball:
-    image = None
+    images = {}
 
     def __init__(self, x, y, velocity, image_path='ball21x21.png'):
-        if Ball.image is None:
-            Ball.image = load_image(image_path)
+        if image_path not in Ball.images:
+            Ball.images[image_path] = load_image(image_path)
+        self.image = Ball.images[image_path]
         self.x, self.y = x, y
         self.velocity = velocity
 
