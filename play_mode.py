@@ -17,7 +17,7 @@ item_select_image = None
 
 
 def handle_events():
-    global boy, paused, pause_key_down
+    global boy, paused, pause_key_down, item_mode
     
     event_list = get_events()
     for event in event_list:
@@ -31,6 +31,9 @@ def handle_events():
                 paused = not paused
                 if paused:
                     boy.release_movement()
+        elif event.type == SDL_KEYDOWN and event.key == SDLK_i:
+            if not paused:
+                item_mode = not item_mode
         elif paused:
             continue
         elif event.type == SDL_KEYDOWN and event.key == SDLK_ESCAPE:
