@@ -6,7 +6,8 @@ import boy
 import game_world
 import grass
 import play_mode
-from sdl2 import SDL_KEYDOWN, SDL_KEYUP, SDLK_2, SDLK_i
+from sdl2 import (SDL_KEYDOWN, SDL_KEYUP, SDLK_0, SDLK_1, SDLK_2,
+                  SDLK_i, SDLK_p, SDLK_SPACE)
 
 
 class BallImageTests(unittest.TestCase):
@@ -54,12 +55,24 @@ class BoyItemTests(unittest.TestCase):
 
         ball_factory.assert_not_called()
 
+    def test_space_wakes_sleeping_player_without_firing(self):
+        with patch.object(boy, 'load_image', return_value=Mock()):
+            with patch.object(boy, 'Ball') as ball_factory:
+                player = boy.Boy()
+                player.fall_asleep()
+                event = Mock(type=SDL_KEYDOWN, key=SDLK_SPACE)
+
+                player.handle_event(event)
+
+        self.assertEqual(player.state, 'IDLE')
+        ball_factory.assert_not_called()
+
 
 class PlayModeItemTests(unittest.TestCase):
     def setUp(self):
         game_world.clear()
         self.play_image_patch = patch.object(
-            play_mode, 'load_image', return_value=Mock()
+            play_mode, 'load_image', side_effect=[Mock(), Mock()]
         )
         self.boy_image_patch = patch.object(
             boy, 'load_image', return_value=Mock()
@@ -85,6 +98,8 @@ class PlayModeItemTests(unittest.TestCase):
     def test_item_mode_toggles_and_selection_persists(self):
         self.send_events(Mock(type=SDL_KEYDOWN, key=SDLK_i))
         self.assertTrue(play_mode.item_mode)
+        self.send_events(Mock(type=SDL_KEYDOWN, key=SDLK_i))
+        self.assertTrue(play_mode.item_mode)
         self.send_events(Mock(type=SDL_KEYUP, key=SDLK_i))
         self.send_events(Mock(type=SDL_KEYDOWN, key=SDLK_2))
         self.assertEqual(play_mode.boy.selected_item, 'large')
@@ -93,6 +108,23 @@ class PlayModeItemTests(unittest.TestCase):
 
         self.assertFalse(play_mode.item_mode)
         self.assertEqual(play_mode.boy.selected_item, 'large')
+
+    def test_open_menu_highlights_selected_item(self):
+        play_mode.item_mode = True
+        play_mode.boy.selected_item = 'large'
+
+        with patch.object(play_mode, 'clear_canvas'), \
+                patch.object(play_mode, 'update_canvas'), \
+                patch.object(play_mode, 'get_canvas_width', return_value=800), \
+                patch.object(play_mode, 'get_canvas_height', return_value=600), \
+                patch.object(game_world, 'render'), \
+                patch.object(play_mode, 'draw_rectangle') as draw_rectangle:
+            play_mode.render()
+
+        play_mode.item_select_image.draw.assert_called_once_with(400, 300)
+        draw_rectangle.assert_called_once_with(
+            274, 226, 526, 274, 255, 215, 0
+        )
 
     def test_world_updates_while_item_mode_is_open(self):
         class UpdateCounter:
@@ -111,6 +143,48 @@ class PlayModeItemTests(unittest.TestCase):
         play_mode.update()
 
         self.assertEqual(counter.updates, 1)
+
+    def test_number_keys_select_each_item(self):
+        play_mode.item_mode = True
+
+        for key, selected_item in (
+                (SDLK_0, 'none'),
+                (SDLK_1, 'small'),
+                (SDLK_2, 'large')):
+            self.send_events(Mock(type=SDL_KEYDOWN, key=key))
+            self.assertEqual(play_mode.boy.selected_item, selected_item)
+
+    def test_pause_stops_updates_and_takes_overlay_precedence(self):
+        class UpdateCounter:
+            updates = 0
+
+            def update(self):
+                self.updates += 1
+
+            def draw(self):
+                pass
+
+        counter = UpdateCounter()
+        game_world.add_oject(counter)
+        play_mode.item_mode = True
+        self.send_events(Mock(type=SDL_KEYDOWN, key=SDLK_p))
+        play_mode.update()
+
+        self.assertTrue(play_mode.paused)
+        self.assertEqual(counter.updates, 0)
+
+        play_mode.item_select_image.draw.reset_mock()
+        with patch.object(play_mode, 'clear_canvas'), \
+                patch.object(play_mode, 'update_canvas'), \
+                patch.object(play_mode, 'get_canvas_width', return_value=800), \
+                patch.object(play_mode, 'get_canvas_height', return_value=600), \
+                patch.object(game_world, 'render'), \
+                patch.object(play_mode, 'draw_rectangle') as draw_rectangle:
+            play_mode.render()
+
+        play_mode.pause_image.draw.assert_called_once_with(400, 300)
+        play_mode.item_select_image.draw.assert_not_called()
+        draw_rectangle.assert_not_called()
 
 
 if __name__ == '__main__':
