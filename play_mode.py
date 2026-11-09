@@ -44,6 +44,9 @@ def handle_events():
             import title_mode
             game_framework.change_mode(title_mode)
             return
+        elif (item_mode and event.type == SDL_KEYDOWN and
+              event.key == SDLK_0):
+            boy.selected_item = 'none'
         else:
             boy.handle_event(event)
 
