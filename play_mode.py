@@ -1,7 +1,8 @@
 import os
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 from pico2d import *
-from sdl2 import SDL_KEYUP, SDLK_p
+from sdl2 import (SDL_KEYDOWN, SDL_KEYUP, SDLK_0, SDLK_1, SDLK_2,
+                  SDLK_i, SDLK_p)
 import game_framework
 import game_world
 from boy import Boy
@@ -10,6 +11,9 @@ from grass import Grass
 paused = False
 pause_key_down = False
 pause_image = None
+item_mode = False
+item_key_down = False
+item_select_image = None
 
 
 def handle_events():
