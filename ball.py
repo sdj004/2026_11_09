@@ -6,9 +6,9 @@ import game_world
 class Ball:
     image = None
 
-    def __init__(self, x, y, velocity):
+    def __init__(self, x, y, velocity, image_path='ball21x21.png'):
         if Ball.image is None:
-            Ball.image = load_image('ball21x21.png')
+            Ball.image = load_image(image_path)
         self.x, self.y = x, y
         self.velocity = velocity
 
