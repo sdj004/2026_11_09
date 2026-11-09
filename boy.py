@@ -18,6 +18,7 @@ class Boy:
         self.dir = 0
         self.face_dir = 1
         self.pressed_keys = set()
+        self.selected_item = 'small'
 
         self.machine = Machine(
             model=self,
