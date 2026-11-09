@@ -102,9 +102,8 @@ class PlayModeItemTests(unittest.TestCase):
         self.assertTrue(play_mode.item_mode)
         self.send_events(Mock(type=SDL_KEYUP, key=SDLK_i))
         self.send_events(Mock(type=SDL_KEYDOWN, key=SDLK_2))
+        self.assertFalse(play_mode.item_mode)
         self.assertEqual(play_mode.boy.selected_item, 'large')
-        self.send_events(Mock(type=SDL_KEYUP, key=SDLK_i))
-        self.send_events(Mock(type=SDL_KEYDOWN, key=SDLK_i))
 
         self.assertFalse(play_mode.item_mode)
         self.assertEqual(play_mode.boy.selected_item, 'large')
@@ -126,6 +125,32 @@ class PlayModeItemTests(unittest.TestCase):
             274, 226, 526, 274, 255, 215, 0
         )
 
+    def test_selecting_item_hides_menu_and_it_can_reopen(self):
+        play_mode.item_mode = True
+        self.send_events(Mock(type=SDL_KEYDOWN, key=SDLK_1))
+        play_mode.item_select_image.draw.reset_mock()
+
+        with patch.object(play_mode, 'clear_canvas'), \
+                patch.object(play_mode, 'update_canvas'), \
+                patch.object(game_world, 'render'):
+            play_mode.render()
+
+        self.assertFalse(play_mode.item_mode)
+        play_mode.item_select_image.draw.assert_not_called()
+
+        self.send_events(Mock(type=SDL_KEYUP, key=SDLK_i))
+        self.send_events(Mock(type=SDL_KEYDOWN, key=SDLK_i))
+        with patch.object(play_mode, 'clear_canvas'), \
+                patch.object(play_mode, 'update_canvas'), \
+                patch.object(play_mode, 'get_canvas_width', return_value=800), \
+                patch.object(play_mode, 'get_canvas_height', return_value=600), \
+                patch.object(game_world, 'render'), \
+                patch.object(play_mode, 'draw_rectangle'):
+            play_mode.render()
+
+        self.assertTrue(play_mode.item_mode)
+        play_mode.item_select_image.draw.assert_called_once_with(400, 300)
+
     def test_world_updates_while_item_mode_is_open(self):
         class UpdateCounter:
             updates = 0
@@ -145,13 +170,15 @@ class PlayModeItemTests(unittest.TestCase):
         self.assertEqual(counter.updates, 1)
 
     def test_number_keys_select_each_item(self):
-        play_mode.item_mode = True
-
         for key, selected_item in (
                 (SDLK_0, 'none'),
                 (SDLK_1, 'small'),
                 (SDLK_2, 'large')):
+            if not play_mode.item_mode:
+                self.send_events(Mock(type=SDL_KEYUP, key=SDLK_i))
+                self.send_events(Mock(type=SDL_KEYDOWN, key=SDLK_i))
             self.send_events(Mock(type=SDL_KEYDOWN, key=key))
+            self.assertFalse(play_mode.item_mode)
             self.assertEqual(play_mode.boy.selected_item, selected_item)
 
     def test_pause_stops_updates_and_takes_overlay_precedence(self):

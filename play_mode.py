@@ -47,12 +47,15 @@ def handle_events():
         elif (item_mode and event.type == SDL_KEYDOWN and
               event.key == SDLK_0):
             boy.selected_item = 'none'
+            item_mode = False
         elif (item_mode and event.type == SDL_KEYDOWN and
               event.key == SDLK_1):
             boy.selected_item = 'small'
+            item_mode = False
         elif (item_mode and event.type == SDL_KEYDOWN and
               event.key == SDLK_2):
             boy.selected_item = 'large'
+            item_mode = False
         else:
             boy.handle_event(event)
 
