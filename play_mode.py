@@ -88,8 +88,17 @@ def render():
     if paused:
         pause_image.draw(get_canvas_width() // 2, get_canvas_height() // 2)
     if item_mode:
-        item_select_image.draw(get_canvas_width() // 2,
-                               get_canvas_height() // 2)
+        center_x = get_canvas_width() // 2
+        center_y = get_canvas_height() // 2
+        item_select_image.draw(center_x, center_y)
+        selection_y = center_y + {
+            'none': 82,
+            'small': 17,
+            'large': -50,
+        }[boy.selected_item]
+        draw_rectangle(center_x - 126, selection_y - 24,
+                       center_x + 126, selection_y + 24,
+                       255, 215, 0)
     update_canvas()
 
 
